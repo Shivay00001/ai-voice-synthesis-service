@@ -1,11 +1,13 @@
-version: '3.8'
-
 services:
-  voice-service:
+  app:
     build: .
     ports:
-      - "8001:8000"
-    volumes:
-      - ./output:/app/output
+      - "8003:8003"
     environment:
-      - USE_GPU=False
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

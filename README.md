@@ -1,50 +1,49 @@
-# Ai Voice Synthesis Service
+# ai-voice-synthesis-service
 
-Synthesize AI voices via REST API. Dockerized TTS engine with CI/CD.
+Real text-to-speech API: a FastAPI wrapper around a **real TTS HTTP API**
+(ElevenLabs-compatible `POST /v1/text-to-speech/{voice_id}`). Returns genuine
+MP3 audio bytes from the provider.
 
-![Language](https://img.shields.io/badge/Language-Python-blue)
-![Status](https://img.shields.io/badge/Status-Active-success)
-![License](https://img.shields.io/badge/License-MIT-green)
+## What it does
 
-## 🚀 Overview
+- `POST /synthesize` — `{"text", "voice_id", "model_id"}` → `audio/mpeg` bytes
+- `GET /voices` — real provider voice catalog
+- `GET /health` — includes `key_configured`
 
-Welcome to the **Ai Voice Synthesis Service** repository. This project is built to deliver a robust and scalable solution tailored to modern development standards.
+## API key
 
-## ✨ Features
+| Env var              | Purpose                                  |
+|----------------------|------------------------------------------|
+| `ELEVENLABS_API_KEY` | **API key** for the TTS provider         |
 
-- **High Performance:** Optimized for speed and efficiency.
-- **Scalable Architecture:** Designed to grow with your needs.
-- **Clean Codebase:** Follows best practices and industry standards.
-- **Secure by Default:** Engineered with security in mind.
+Without the key, `/synthesize` returns **HTTP 503** with a clear message —
+it never returns fake audio. With an invalid key, the provider's real 401 is
+surfaced.
 
-## 🛠️ Prerequisites
+## Offline fallback (honest note)
 
-Ensure you have the following installed in your environment before proceeding:
-- Appropriate runtime/compiler for `Python`
-- Standard development tools
+There is no offline TTS in this service: real neural voices require the
+provider API. If you need fully offline synthesis, install a local engine
+(e.g. Coqui XTTS or Piper) and point this service's client at it — the
+`synthesize()` function in `tts.py` is the single place to swap.
 
-## 📦 Installation
+## Run
 
-Follow standard installation steps for `Python` to set up the project locally:
+```bash
+pip install -r requirements.txt
+ELEVENLABS_API_KEY=... uvicorn main:app --port 8003
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Shivay00001/ai-voice-synthesis-service.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd ai-voice-synthesis-service
-   ```
-3. Install dependencies according to the standard `Python` ecosystem.
+```bash
+curl -X POST http://localhost:8003/synthesize -H 'Content-Type: application/json' \
+  -d '{"text":"Hello from the voice service"}' --output speech.mp3
+```
 
-## 💻 Usage
+## Tests
 
-Run the project using standard execution commands for `Python`. Ensure all environment variables and configurations are set prior to execution.
+```bash
+python -m pytest tests/ -q
+```
 
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
-
-## 📝 License
-
-This project is licensed under standard terms.
+Covers: honest 503 without key, real upstream 401 with a dummy key (proves
+the HTTP client is genuine), empty-text rejection.
