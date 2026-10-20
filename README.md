@@ -47,3 +47,7 @@ python -m pytest tests/ -q
 
 Covers: honest 503 without key, real upstream 401 with a dummy key (proves
 the HTTP client is genuine), empty-text rejection.
+
+## Built by VisionQuantech
+
+Built by [VisionQuantech](https://visionquantech.com) — an AI automation studio offering [AI voice agents](https://visionquantech.com/ai-voice-agents) for businesses: 24/7 phone answering, appointment booking, and [AI chatbot development](https://visionquantech.com/ai-chatbot-development).
